@@ -73,7 +73,7 @@ the relevant Commercial Agreement.
 			<artifactId>neo4j-kernel</artifactId>
 			<classifier>tests</classifier>
 			<version>1.6.1</version>
-			<scope>tests</scope>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
