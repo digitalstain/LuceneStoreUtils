@@ -105,12 +105,19 @@ public class TestSanity
     private void goOverBoth()
     {
         Index<Node> index = db.index().forNodes( "testing" );
-        IndexHits<Node> hits = index.get( "key2", "value2" );
+
         try
         {
+            IndexHits<Node> hits = index.get( "key1", "value1" );
             for ( Node n : hits )
             {
-                System.out.println( n.getId() );
+                n.getId();
+            }
+
+            hits = index.get( "key2", "value2" );
+            for ( Node n : hits )
+            {
+                n.getId();
             }
         }
         finally
@@ -122,6 +129,13 @@ public class TestSanity
     @Test( expected = java.lang.NumberFormatException.class )
     public void shouldFailOnNoAction() throws Exception
     {
+        goOverBoth();
+    }
+
+    @Test
+    public void shouldSucceedAfterAction() throws Exception
+    {
+        RepairMissingId.main( new String[] { dbDir.getAbsolutePath() } );
         goOverBoth();
     }
 }
