@@ -84,10 +84,41 @@ public class TestCorrectness
         assertEquals( "did not detect docs without problems", 2, repair.getTotalCount() );
     }
 
+    @Test( expected = NumberFormatException.class )
+    public void testDefaultDoesNotRemoveDamagedFields() throws Exception
+    {
+        File storeDir = TargetDirectory.forTest( getClass() ).directory( "testDefaultDoesNotRemoveDamagedFields", true );
+        GraphDatabaseHandler db = new GraphDatabaseHandler( storeDir );
+
+        String nodeIndex1 = "node1";
+        db.createNodeIndex( nodeIndex1 );
+        long node1 = db.createAndIndexNode( nodeIndex1, "key1", "value1", false );
+        db.shutdown();
+
+        IndexPaths paths = IndexPaths.fromRoot( storeDir );
+
+        IndexHandler indexHandler = new IndexHandler( paths.forNode( nodeIndex1 ) );
+        indexHandler.deleteFieldFromNodeDocument( node1, "_id_" );
+
+        IndexRepair repair = new IndexRepair( paths.forNode( nodeIndex1 ) );
+        repair.scan();
+
+        db.start();
+
+        try
+        {
+            db.getUniqueFromNodeIndex( nodeIndex1, "key1", "value1" );
+        }
+        finally
+        {
+            db.shutdown();
+        }
+    }
+
     @Test
     public void testRemovesDamagedFields() throws Exception
     {
-        File storeDir = TargetDirectory.forTest( getClass() ).directory( "testDetectsDamagedFields", true );
+        File storeDir = TargetDirectory.forTest( getClass() ).directory( "testRemovesDamagedFields", true );
         GraphDatabaseHandler db = new GraphDatabaseHandler( storeDir );
 
         String nodeIndex1 = "node1";
