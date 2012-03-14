@@ -20,6 +20,7 @@
 package org.neo4j.index.lucene.repair;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 
@@ -57,6 +58,56 @@ public class TestCorrectness
         assertEquals( "missing index value", relationship,
                 db.getUniqueFromRelationshipIndex( relationshipIndex, "key", "value" ).getId() );
 
+        db.shutdown();
+    }
+
+    @Test
+    public void testDetectsDamagedFields() throws Exception
+    {
+        File storeDir = TargetDirectory.forTest( getClass() ).directory( "testDetectsDamagedFields", true );
+        GraphDatabaseHandler db = new GraphDatabaseHandler( storeDir );
+
+        String nodeIndex1 = "node1";
+        db.createNodeIndex( nodeIndex1 );
+        long node1 = db.createAndIndexNode( nodeIndex1, "key1", "value1", false );
+        db.createAndIndexNode( nodeIndex1, "key2", "value2", false );
+        db.shutdown();
+
+        IndexPaths paths = IndexPaths.fromRoot( storeDir );
+
+        IndexHandler indexHandler = new IndexHandler( paths.forNode( nodeIndex1 ) );
+        indexHandler.deleteFieldFromNodeDocument( node1, "_id_" );
+
+        IndexRepair repair = new IndexRepair(paths.forNode( nodeIndex1 ));
+        repair.scan();
+        assertEquals( "did not detect damaged docs", 1, repair.getDamagedCount() );
+        assertEquals( "did not detect docs without problems", 2, repair.getTotalCount() );
+    }
+
+    @Test
+    public void testRemovesDamagedFields() throws Exception
+    {
+        File storeDir = TargetDirectory.forTest( getClass() ).directory( "testDetectsDamagedFields", true );
+        GraphDatabaseHandler db = new GraphDatabaseHandler( storeDir );
+
+        String nodeIndex1 = "node1";
+        db.createNodeIndex( nodeIndex1 );
+        long node1 = db.createAndIndexNode( nodeIndex1, "key1", "value1", false );
+        long node2 = db.createAndIndexNode( nodeIndex1, "key2", "value2", false );
+        db.shutdown();
+
+        IndexPaths paths = IndexPaths.fromRoot( storeDir );
+
+        IndexHandler indexHandler = new IndexHandler( paths.forNode( nodeIndex1 ) );
+        indexHandler.deleteFieldFromNodeDocument( node1, "_id_" );
+
+        IndexRepair repair = new IndexRepair( paths.forNode( nodeIndex1 ) );
+        repair.setDeleteDamaged( true );
+        repair.scan();
+
+        db.start();
+        assertNull( "index value should not be here", db.getUniqueFromNodeIndex( nodeIndex1, "key1", "value1" ) );
+        assertEquals( "missing index value", node2, db.getUniqueFromNodeIndex( nodeIndex1, "key2", "value2" ).getId() );
         db.shutdown();
     }
 }

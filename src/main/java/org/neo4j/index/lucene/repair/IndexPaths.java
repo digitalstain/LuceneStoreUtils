@@ -19,21 +19,28 @@
  */
 package org.neo4j.index.lucene.repair;
 
-import java.util.List;
+import java.io.File;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.store.Directory;
-
-public abstract class IndexHandler
+public class IndexPaths
 {
-    public IndexHandler( Directory index )
+    private static final String IndexDirectoryName = "index";
+    private static final String LuceneIndexDirectoryName = "lucene";
+    private static final String NodeIndexesDirectoryName = "node";
+
+    private final File root;
+
+    private IndexPaths( File root )
     {
+        this.root = new File( new File( root, IndexDirectoryName ), LuceneIndexDirectoryName );
     }
 
-    public abstract boolean deleteDocument( int docId );
+    public File forNode( String nodeIndexName )
+    {
+        return new File( new File( root, NodeIndexesDirectoryName ), nodeIndexName );
+    }
 
-    public abstract void deleteFieldFromDocument( Fieldable field, Document doc );
-
-    public abstract List<Document> getDocumentsWithoutField( String fieldName );
+    public static IndexPaths fromRoot( File root )
+    {
+        return new IndexPaths( root );
+    }
 }
