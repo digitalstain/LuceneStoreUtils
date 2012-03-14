@@ -32,7 +32,7 @@ public class LuceneDataSourceAccessUnsafe
                 LuceneDataSource.DEFAULT_NAME );
     }
 
-    public IndexWriter getWriterFor( IndexType primitiveType, String indexName )
+    public IndexWriter getWriterFor( IndexTypeEnum primitiveType, String indexName )
     {
         byte entityTypeByte;
         EntityType entityType;

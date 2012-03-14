@@ -52,11 +52,16 @@ public class IndexPaths
 
     public File[] nodeIndexes()
     {
-        return new File( root, NodeIndexesDirectoryName ).listFiles();
+        return wrap( new File( root, NodeIndexesDirectoryName ).listFiles() );
     }
 
     public File[] relationshipIndexes()
     {
-        return new File( root, RelationshipIndexesDirectoryName ).listFiles();
+        return wrap( new File( root, RelationshipIndexesDirectoryName ).listFiles() );
+    }
+
+    private File[] wrap( File[] files )
+    {
+        return files == null ? new File[0] : files;
     }
 }
