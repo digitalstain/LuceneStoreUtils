@@ -26,6 +26,7 @@ public class IndexPaths
     private static final String IndexDirectoryName = "index";
     private static final String LuceneIndexDirectoryName = "lucene";
     private static final String NodeIndexesDirectoryName = "node";
+    private static final String RelationshipIndexesDirectoryName = "relationship";
 
     private final File root;
 
@@ -39,8 +40,23 @@ public class IndexPaths
         return new File( new File( root, NodeIndexesDirectoryName ), nodeIndexName );
     }
 
+    public File forRelationship( String relationshipIndexName )
+    {
+        return new File( new File( root, RelationshipIndexesDirectoryName ), relationshipIndexName );
+    }
+
     public static IndexPaths fromRoot( File root )
     {
         return new IndexPaths( root );
+    }
+
+    public File[] nodeIndexes()
+    {
+        return new File( root, NodeIndexesDirectoryName ).listFiles();
+    }
+
+    public File[] relationshipIndexes()
+    {
+        return new File( root, RelationshipIndexesDirectoryName ).listFiles();
     }
 }

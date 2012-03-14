@@ -34,7 +34,7 @@ public class IndexRepair
     private static final Logger log = Logger.getLogger( IndexRepair.class.getName() );
     private static final String IdField = "_id_";
 
-    private final FSDirectory dir;
+    private final File dir;
     private final Collection<Document> damagedDocs;
     private final IndexReader reader;
 
@@ -42,11 +42,11 @@ public class IndexRepair
     private int scannedDocs;
     private boolean deleteDamaged;
 
-    public IndexRepair(File indexDir) throws IOException
+    public IndexRepair( File indexDir ) throws IOException
     {
-        dir = FSDirectory.open( indexDir );
+        dir = indexDir;
         damagedDocs = new HashSet<Document>();
-        reader = IndexReader.open( dir, false );
+        reader = IndexReader.open( FSDirectory.open( indexDir ), false /*read only*/);
         deleteDamaged = false;
     }
 
@@ -77,12 +77,11 @@ public class IndexRepair
             {
                 handleDamaged( reader, i, current );
             }
-
         }
         reader.commit( null );
         reader.close();
-        log.info( "Index " + dir.getDirectory().getAbsolutePath() + " done. Scanned " + scannedDocs
-                  + " documents, there were" + deletedDocs + " deleted ones which were ignored" );
+        log.info( "Index " + dir.getAbsolutePath() + " done. Scanned " + scannedDocs
+                  + " documents, there were " + deletedDocs + " deleted ones which were ignored" );
     }
 
     public int getDamagedCount()

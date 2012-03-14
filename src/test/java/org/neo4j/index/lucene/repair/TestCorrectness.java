@@ -50,7 +50,18 @@ public class TestCorrectness
                 false );
 
         db.shutdown();
-        RepairMissingId.main( new String[] { storeDir.getAbsolutePath() } );
+        IndexPaths paths = IndexPaths.fromRoot( storeDir );
+        IndexRepair nodeIndex1Repair = new IndexRepair( paths.forNode( nodeIndex1 ) );
+        nodeIndex1Repair.setDeleteDamaged( true );
+        nodeIndex1Repair.scan();
+
+        IndexRepair nodeIndex2Repair = new IndexRepair( paths.forNode( nodeIndex2 ) );
+        nodeIndex2Repair.setDeleteDamaged( true );
+        nodeIndex2Repair.scan();
+
+        IndexRepair relationshipIndexRepair = new IndexRepair( paths.forRelationship( relationshipIndex ) );
+        relationshipIndexRepair.setDeleteDamaged( true );
+        relationshipIndexRepair.scan();
         db.start();
 
         assertEquals( "missing index value", node1, db.getUniqueFromNodeIndex( nodeIndex1, "key1", "value1" ).getId() );

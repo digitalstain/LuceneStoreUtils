@@ -26,6 +26,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.kernel.AbstractGraphDatabase;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 public class GraphDatabaseHandler
@@ -154,5 +155,10 @@ public class GraphDatabaseHandler
     {
         shutdown();
         start();
+    }
+
+    public AbstractGraphDatabase getAsAGD()
+    {
+        return (AbstractGraphDatabase) db;
     }
 }

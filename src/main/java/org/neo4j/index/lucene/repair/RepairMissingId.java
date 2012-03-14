@@ -20,26 +20,23 @@
 package org.neo4j.index.lucene.repair;
 
 import java.io.File;
-import java.util.logging.Logger;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.store.FSDirectory;
 import org.neo4j.kernel.impl.nioneo.store.NeoStore;
 
 public class RepairMissingId
 {
-    private static final Logger log = Logger.getLogger( RepairMissingId.class.getName() );
-    private static final String IdField = "_id_";
-
     public static void main( String[] args ) throws Exception
     {
+        boolean deleteDamaged = false;
+
         if ( args.length < 1 )
         {
             System.err.println( "You must supply a path to the database" );
             System.exit( 1 );
+        }
+        if ( args.length > 1 )
+        {
+            deleteDamaged = Boolean.parseBoolean( args[1] );
         }
         File path = new File( args[0] );
         if ( !path.isDirectory() )
@@ -52,62 +49,18 @@ public class RepairMissingId
             System.err.println( "You must supply a valid graph db path as a first argument" );
             System.exit( 1 );
         }
-        File nodes = new File( path, "index/lucene/node" );
-        if ( nodes.isDirectory() && nodes.exists() )
+        IndexPaths indexPath = IndexPaths.fromRoot( path );
+        for ( File index : indexPath.nodeIndexes() )
         {
-            for ( File index : nodes.listFiles() )
-            {
-                new RepairMissingId().doIndex( index );
-            }
+            IndexRepair repair = new IndexRepair( index );
+            repair.setDeleteDamaged( deleteDamaged );
+            repair.scan();
         }
-        File relationships = new File( path, "index/lucene/relationship" );
-        if ( relationships.isDirectory() && relationships.exists() )
+        for ( File index : indexPath.relationshipIndexes() )
         {
-            for ( File index : relationships.listFiles() )
-            {
-                new RepairMissingId().doIndex( index );
-            }
-        }
-    }
-
-    private void doIndex( File pathToIndex ) throws Exception
-    {
-        log.info( "Checking " + pathToIndex );
-        FSDirectory dir = FSDirectory.open( pathToIndex );
-        IndexReader reader = IndexReader.open( dir, false );
-
-        System.out.println( "Opened it, it contains " + reader.maxDoc()
-                            + " documents. Iterating over them" );
-        log.info( "Opened it, it contains " + reader.maxDoc()
-                  + " documents. Iterating over them" );
-        int deleted = 0;
-        for ( int i = 0; i < reader.maxDoc(); i++ )
-        {
-            if ( reader.isDeleted( i ) )
-            {
-                deleted++;
-                continue;
-            }
-            Document current = reader.document( i );
-            Field id = current.getField( IdField );
-            if ( id == null )
-            {
-                handleDamaged( current );
-                reader.deleteDocument( i );
-            }
-        }
-        reader.commit( null );
-        reader.close();
-        log.info( "Index " + pathToIndex + " done. Found " + deleted
-                  + " deleted documents which were ignored" );
-    }
-
-    private void handleDamaged( Document doc )
-    {
-        log.warning( "Got a document without the _id_ field. These are the fields and values it contains" );
-        for ( Fieldable f : doc.getFields() )
-        {
-            log.info( "\tfield: " + f.name() + ", value: " + f.stringValue() );
+            IndexRepair repair = new IndexRepair( index );
+            repair.setDeleteDamaged( deleteDamaged );
+            repair.scan();
         }
     }
 }
