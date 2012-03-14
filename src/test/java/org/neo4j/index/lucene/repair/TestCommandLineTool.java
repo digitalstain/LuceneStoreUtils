@@ -56,7 +56,7 @@ public class TestCommandLineTool
         indexHandler.deleteFieldFromNodeDocument( thatWillBeDamaged + 1, "_id_" );
 
         // repair phase
-        RepairMissingId.main( new String[] { storeDir.getAbsolutePath(), "true" } );
+        RepairMissingId.main( new String[] { storeDir.getAbsolutePath(), "repair" } );
 
         // verify phase
         db.start();
@@ -90,7 +90,6 @@ public class TestCommandLineTool
         db.shutdown();
 
         // damage phase
-
         long thatWillBeDamaged = 50;
         IndexPaths paths = IndexPaths.fromRoot( storeDir );
 

@@ -28,7 +28,6 @@ public class RepairMissingId
     public static void main( String[] args ) throws Exception
     {
         boolean deleteDamaged = false;
-
         if ( args.length < 1 )
         {
             System.err.println( "You must supply a path to the database" );
@@ -36,7 +35,7 @@ public class RepairMissingId
         }
         if ( args.length > 1 )
         {
-            deleteDamaged = Boolean.parseBoolean( args[1] );
+            deleteDamaged = "repair".equalsIgnoreCase( args[1] );
         }
         File path = new File( args[0] );
         if ( !path.isDirectory() )
@@ -48,6 +47,12 @@ public class RepairMissingId
         {
             System.err.println( "You must supply a valid graph db path as a first argument" );
             System.exit( 1 );
+        }
+        System.out.println( "all is well, starting scan in directory " + path.getAbsolutePath() );
+        if ( deleteDamaged )
+        {
+            System.out.println( "repair option was set: " + args[1]
+                                + ", any documents without the id field will be deleted" );
         }
         IndexPaths indexPath = IndexPaths.fromRoot( path );
         for ( File index : indexPath.nodeIndexes() )

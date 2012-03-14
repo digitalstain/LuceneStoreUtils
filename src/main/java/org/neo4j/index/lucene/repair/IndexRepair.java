@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.logging.Logger;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.FSDirectory;
 
@@ -62,7 +63,7 @@ public class IndexRepair
 
     public void scan() throws IOException
     {
-        log.info( "Opened it, it contains " + reader.maxDoc()
+        log.info( "Opened index at " + dir.getAbsolutePath() + ", it contains " + reader.maxDoc()
                   + " documents. Iterating over them" );
         for ( int i = 0; i < reader.maxDoc(); i++ )
         {
@@ -101,6 +102,11 @@ public class IndexRepair
 
     private void handleDamaged( IndexReader reader, int docId, Document doc ) throws IOException
     {
+        log.info( "Damaged document detected, the fields are" );
+        for ( Fieldable field : doc.getFields() )
+        {
+            log.info( String.format( "\t%s : %s", field.name(), field.stringValue() ) );
+        }
         damagedDocs.add( doc );
         if ( deleteDamaged )
         {
