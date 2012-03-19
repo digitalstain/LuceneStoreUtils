@@ -1,1 +1,12 @@
-A (currently minimal) collection of utilities for various tasks on Neo4j Lucene indexes
+A repair tool for Neo4j Lucene indexes in case the _id_ field goes missing in some documents.
+
+!!!THIS TOOL IS NOT SAFE TO USE ON A RUNNING DATABASE!!!
+
+You can use this in two modes. One is a standalone tool from the command line, as in
+
+java -jar lucene-store-utils.jar <path-to-database> [repair]
+
+with [repair] being an optional argument which, if present, will remove any documents it
+finds without the _id_ field, in all indexes created by the database.
+
+You can also use it as an embedded repair tool - see the TestCorrectness tests for sample use.
